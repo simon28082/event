@@ -4,12 +4,12 @@ namespace CrCms\Event\Contracts;
 
 /**
  * Interface EventSource
- * @package Simon\Event\Contracts
+ * @package CrCms\Event\Contracts
  */
 interface EventSource
 {
     /**
-     * @return object
+     * @return mixed
      */
     public function source();
 }
