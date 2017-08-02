@@ -1,21 +1,22 @@
 {
-    "name": "crcms/event",
-    "keywords": ["php", "event"],
-    "description": "event",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "simon",
-            "email": "28737164@qq.com",
-            "homepage": "http://crcms.cn"
-        }
-    ],
-	"require": {
-		"php":">=7.0.0"
-	},
-	"autoload":{
-		"psr-4": {
-            "CrCms\\Event\\": "src/"
-        }
-	}
+  "name": "crcms/event",
+  "keywords": ["event", "observer", "crcms", "php"],
+  "description": "event",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "simon",
+      "email": "28737164@qq.com",
+      "homepage": "http://crcms.cn"
+    }
+  ],
+  "require": {
+    "php": ">=7.0.0",
+    "illuminate/support": "^5.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "CrCms\\Event\\": "src/"
+    }
+  }
 }
