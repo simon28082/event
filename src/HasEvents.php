@@ -11,7 +11,7 @@ use CrCms\Event\Contracts\Dispatcher as ContractDispatcher;
 trait HasEvents
 {
     /**
-     * @var null
+     * @var ContractDispatcher|null
      */
     protected static $dispatcher = null;
 
@@ -25,17 +25,28 @@ trait HasEvents
     }
 
     /**
-     * @param string $event
-     * @param $callback
+     * @param string $class
      * @return void
      */
-    public static function registerEvent(string $event, $callback)
+    public static function observer(string $class)
+    {
+        array_map(function ($event) use ($class) {
+            static::registerEvent($event, $class . '@' . camel_case($event));
+        }, static::events());
+    }
+
+    /**
+     * @param string $event
+     * @param $listener
+     * @return void
+     */
+    public static function registerEvent(string $event, $listener)
     {
         if (
             static::$dispatcher instanceof ContractDispatcher &&
             in_array($event, static::events(), true)
         ) {
-            static::$dispatcher->listen([static::fullEventName($event)], $callback);
+            static::$dispatcher->listen([static::fullEventName($event)], $listener);
         }
     }
 
@@ -56,7 +67,7 @@ trait HasEvents
 
     /**
      * @param string $event
-     * @return void
+     * @return mixed
      */
     public function fireEvent(string $event, ...$params)
     {
@@ -65,8 +76,10 @@ trait HasEvents
             in_array($event, static::events(), true)
         ) {
             array_unshift($params, $this);
-            static::$dispatcher->dispatch(static::fullEventName($event), ...$params);
+            return static::$dispatcher->dispatch(static::fullEventName($event), ...$params);
         }
+
+        return null;
     }
 
     /**
@@ -91,18 +104,15 @@ trait HasEvents
     abstract public static function events(): array;
 
     /**
-     * @param Dispatcher $dispatcher
-     * @return void
+     * @param ContractDispatcher $dispatcher
      */
-    public static function setDispatcher(Dispatcher $dispatcher)
+    public static function setDispatcher(ContractDispatcher $dispatcher)
     {
-        if (!static::$dispatcher instanceof ContractDispatcher) {
-            static::$dispatcher = $dispatcher;
-        }
+        static::$dispatcher = $dispatcher;
     }
 
     /**
-     * @return null
+     * @return ContractDispatcher
      */
     public static function getDispatcher()
     {
