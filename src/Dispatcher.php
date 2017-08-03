@@ -53,13 +53,18 @@ class Dispatcher implements ContractDispatcher
      */
     public function dispatch(string $eventName, ...$params): bool
     {
-        foreach ($this->listeners[$eventName] as $listeners) {
-            foreach ($listeners as $listener) {
-                $result = is_array($listener) ?
-                    $listener[0]->{$listener[1]}(...$params) :
-                    $result = $listener(...$params);
-
-                if ($result === false) return $result;
+        if (isset($this->listeners[$eventName])) {
+            foreach ($this->listeners[$eventName] as $listeners) {
+                foreach ($listeners as $listener) {
+                    if (is_array($listener) && method_exists($listener[0], $listener[1])) {
+                        $result = $listener[0]->{$listener[1]}(...$params);
+                    } elseif (is_object($listener)) {
+                        $result = $listener(...$params);
+                    } else {
+                        $result = null;
+                    }
+                    if ($result === false) return $result;
+                }
             }
         }
 
@@ -85,8 +90,8 @@ class Dispatcher implements ContractDispatcher
         $result = [];
         foreach ((array)$listeners as $listener) {
             $result[] = $listener instanceof \Closure ?
-                    $this->markClosureListener($listener) :
-                    $this->markClassListener($listener, $eventName);
+                $this->markClosureListener($listener) :
+                $this->markClassListener($listener, $eventName);
         }
 
         return $result;
