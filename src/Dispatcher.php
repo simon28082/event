@@ -3,6 +3,9 @@
 namespace CrCms\Event;
 
 use CrCms\Event\Contracts\Dispatcher as ContractDispatcher;
+use Closure;
+use Illuminate\Support\Str;
+use BadMethodCallException;
 
 /**
  * Class Dispatcher
@@ -89,7 +92,7 @@ class Dispatcher implements ContractDispatcher
     {
         $result = [];
         foreach ((array)$listeners as $listener) {
-            $result[] = $listener instanceof \Closure ?
+            $result[] = $listener instanceof Closure ?
                 $this->markClosureListener($listener) :
                 $this->markClassListener($listener, $eventName);
         }
@@ -98,10 +101,10 @@ class Dispatcher implements ContractDispatcher
     }
 
     /**
-     * @param \Closure $listener
-     * @return \Closure
+     * @param Closure $listener
+     * @return Closure
      */
-    protected function markClosureListener(\Closure $listener): \Closure
+    protected function markClosureListener(Closure $listener): Closure
     {
         return function ($eventSource) use ($listener) {
             return $listener($eventSource);
@@ -118,14 +121,14 @@ class Dispatcher implements ContractDispatcher
         $format = explode('@', $listener);
         $listener = new $format[0];
         if (!isset($format[1])) {
-            $method = camel_case(explode(':', $eventName)[1]);
+            $method = Str::camel(explode(':', $eventName)[1]);
             if (method_exists($listener, $method)) {
                 $format[1] = $method;
             } else if (method_exists($listener, 'handle')) {
                 $format[1] = 'handle';
             } else {
                 $class = static::class;
-                throw new \BadMethodCallException("Call to undefined method {$class}::{$method}");
+                throw new BadMethodCallException("Call to undefined method {$class}::{$method}");
             }
         }
 

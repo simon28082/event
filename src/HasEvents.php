@@ -3,6 +3,8 @@
 namespace CrCms\Event;
 
 use CrCms\Event\Contracts\Dispatcher as ContractDispatcher;
+use Illuminate\Support\Str;
+use BadMethodCallException;
 
 /**
  * Class HasEvents
@@ -11,9 +13,9 @@ use CrCms\Event\Contracts\Dispatcher as ContractDispatcher;
 trait HasEvents
 {
     /**
-     * @var ContractDispatcher|null
+     * @var ContractDispatcher
      */
-    protected static $dispatcher = null;
+    protected static $dispatcher;
 
     /**
      * @param string $eventName
@@ -31,7 +33,7 @@ trait HasEvents
     public static function observer(string $class)
     {
         array_map(function ($event) use ($class) {
-            static::registerEvent($event, $class . '@' . camel_case($event));
+            static::registerEvent($event, $class . '@' . Str::camel($event));
         }, static::events());
     }
 
@@ -133,13 +135,13 @@ trait HasEvents
      */
     public static function __callStatic(string $name, array $arguments)
     {
-        $name = snake_case($name);
+        $name = Str::snake($name);
         if (in_array($name, static::events(), true)) {
             static::registerEvent($name, $arguments[0]);
             return;
         }
 
         $class = static::class;
-        throw new \BadMethodCallException("Call to undefined method {$class}::{$name}");
+        throw new BadMethodCallException("Call to undefined method {$class}::{$name}");
     }
 }
