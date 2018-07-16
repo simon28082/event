@@ -124,7 +124,7 @@ trait HasEvents
      */
     public static function unsetDispatcher()
     {
-        unset(static::$dispatcher);
+        static::$dispatcher = null;
     }
 
     /**
