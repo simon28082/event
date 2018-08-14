@@ -18,6 +18,11 @@ trait HasEvents
     protected static $dispatcher;
 
     /**
+     * @var array
+     */
+    protected static $events = [];
+
+    /**
      * @param string $eventName
      * @return string
      */
@@ -34,7 +39,7 @@ trait HasEvents
     {
         array_map(function ($event) use ($class) {
             static::registerEvent($event, $class . '@' . Str::camel($event));
-        }, static::events());
+        }, static::$events);
     }
 
     /**
@@ -46,7 +51,7 @@ trait HasEvents
     {
         if (
             static::$dispatcher instanceof ContractDispatcher &&
-            in_array($event, static::events(), true)
+            in_array($event, static::$events, true)
         ) {
             static::$dispatcher->listen([static::fullEventName($event)], $listener);
         }
@@ -61,7 +66,7 @@ trait HasEvents
     {
         if (
             static::$dispatcher instanceof ContractDispatcher &&
-            in_array($event, static::events(), true)
+            in_array($event, static::$events, true)
         ) {
             static::$dispatcher->push(static::fullEventName($event), $listener);
         }
@@ -75,7 +80,7 @@ trait HasEvents
     {
         if (
             static::$dispatcher instanceof ContractDispatcher &&
-            in_array($event, static::events(), true)
+            in_array($event, static::$events, true)
         ) {
             array_unshift($params, $this);
             return static::$dispatcher->dispatch(static::fullEventName($event), ...$params);
@@ -92,7 +97,7 @@ trait HasEvents
     {
         if (
             static::$dispatcher instanceof ContractDispatcher &&
-            in_array($event, static::events(), true)
+            in_array($event, static::$events, true)
         ) {
             return static::$dispatcher->hasListeners(static::fullEventName($event));
         }
@@ -103,7 +108,13 @@ trait HasEvents
     /**
      * @return array
      */
-    abstract public static function events(): array;
+    public static function events(array $events): array
+    {
+        return array_merge(
+            array_keys($events),
+            array_keys(static::$events)
+        );
+    }
 
     /**
      * @param ContractDispatcher $dispatcher
@@ -136,7 +147,7 @@ trait HasEvents
     public static function __callStatic(string $name, array $arguments)
     {
         $name = Str::snake($name);
-        if (in_array($name, static::events(), true)) {
+        if (in_array($name, static::$events, true)) {
             static::registerEvent($name, $arguments[0]);
             return;
         }
