@@ -110,10 +110,11 @@ trait HasEvents
      */
     public static function events(array $events): array
     {
-        return array_merge(
+        static::$events = array_merge(
             array_keys($events),
             array_keys(static::$events)
         );
+        return static::$events;
     }
 
     /**
